@@ -1,0 +1,283 @@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  namefix.bash Tests  @@@@@@@@@@@@@@@@@@@@@@@@
+
+********************************************************************************
+[[[ Usage tests - all must fail ]]]
+
+[Ex1] --> Test Case 01 <--
+./namefix.bash
+Usage: namefix.bash <inputfile> <outputfile>
+Return code from the program is 1
+
+[Ex1] --> Test Case 02 <--
+----------files and perms--------
+5715435 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1.txt
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1.txt
+Usage: namefix.bash <inputfile> <outputfile>
+Return code from the program is 1
+
+[Ex1] --> Test Case 03 <--
+----------files and perms--------
+5715435 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1.txt
+5715436 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file2.out
+5715437 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file3.out
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1.txt /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file2.out /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file3.out
+Usage: namefix.bash <inputfile> <outputfile>
+Return code from the program is 1
+
+[Ex1] --> Test Case 04 <--
+----------files and perms--------
+5715438 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1d.txt
+5715438 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 file1d.txt
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1d.txt file1d.txt
+Error: input /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/file1d.txt and output file1d.txt files are the same.
+Return code from the program is 2
+
+
+[[[ Permission tests - all must fail ]]]
+
+[Ex1] --> Test Case 05 <--
+----------files and perms--------
+5715305 --w------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp1/file1.txt
+properties of /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp1/file1.out cannot be determined.
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp1/file1.txt /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp1/file1.out
+Error: do not have permissions to read the input file /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp1/file1.txt.
+Return code from the program is 3
+
+[Ex1] --> Test Case 06 <--
+----------files and perms--------
+5715307 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp2/file1.txt
+5715308 -r-------- 1 jdsilv2 root 0 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp2/file1.out
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp2/file1.txt /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp2/file1.out
+Error: do not have write permission on the output file /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp2/file1.out.
+Return code from the program is 4
+
+[Ex1] --> Test Case 07 <--
+----------files and perms--------
+5715309 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3/file1.txt
+5715440 dr-x------ 2 jdsilv2 root 3 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3
+properties of /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3/file1.out cannot be determined.
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3/file1.txt /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3/file1.out
+Error: do not have write permission on the output directory /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp3.
+Return code from the program is 4
+
+[Ex1] --> Test Case 08 <--
+
+----------files and perms--------
+5717761 -rw------- 1 jdsilv2 root 14 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp4/names1.txt
+5715441 drwx------ 3 jdsilv2 root 3 Sep  5 14:01 testp4/out
+5715442 drwx------ 2 jdsilv2 root 2 Sep  5 14:01 testp4/out/names1.txt
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp4/names1.txt testp4/out
+Error testp4/out/names1.txt is a directory
+Return code from the program is 4
+Check if input and output files exist.
+----------files and perms--------
+5717761 -rw------- 1 jdsilv2 root 14 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/testp4/names1.txt
+5715441 drwx------ 3 jdsilv2 root 3 Sep  5 14:01 testp4/out
+5715442 drwx------ 2 jdsilv2 root 2 Sep  5 14:01 testp4/out/names1.txt
+---------------------------------
+
+[[[ Correct usages, must succeed ]]]
+[Ex1] --> Test Case 09 <--
+
+----------files and perms--------
+5717763 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.txt
+properties of /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.out cannot be determined.
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.txt /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.out
+John Lennon
+Return code from the program is 0
+Check if input and output files exist.
+----------files and perms--------
+5717763 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.txt
+5717040 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test1/names1.out
+---------------------------------
+[Ex1] --> Test Case 10 <--
+
+----------files and perms--------
+5717765 -rw------- 1 jdsilv2 root 15 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test2/names1.txt
+5717041 drwx------ 3 jdsilv2 root 4 Sep  5 14:01 test2
+properties of test2/out/names1.out cannot be determined.
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test2/names1.txt test2/out/names1.out
+Paul Mccartney
+Return code from the program is 0
+Check if input and output files exist.
+----------files and perms--------
+5717765 -rw------- 1 jdsilv2 root 15 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test2/names1.txt
+5717766 -rw------- 1 jdsilv2 root 15 Sep  5 14:01 test2/out/names1.out
+---------------------------------
+[Ex1] --> Test Case 11 <--
+
+----------files and perms--------
+5717042 -rw------- 1 jdsilv2 root 16 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test3/names1.txt
+5717768 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 test3/names1.out
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test3/names1.txt test3/names1.out
+George Harrison
+Return code from the program is 0
+Check if input and output files exist.
+----------files and perms--------
+5717042 -rw------- 1 jdsilv2 root 16 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test3/names1.txt
+5717768 -rw------- 1 jdsilv2 root 16 Sep  5 14:01 test3/names1.out
+---------------------------------
+[Ex1] --> Test Case 12 <--
+
+----------files and perms--------
+5717044 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test4/names1.txt
+5717043 dr-x------ 2 jdsilv2 root 3 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test4/out
+5717770 -rw------- 1 jdsilv2 root 0 Sep  5 14:01 test4/out/names1.out
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test4/names1.txt test4/out/names1.out
+Ringo Starr
+Return code from the program is 0
+Check if input and output files exist.
+----------files and perms--------
+5717044 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test4/names1.txt
+5717770 -rw------- 1 jdsilv2 root 12 Sep  5 14:01 test4/out/names1.out
+---------------------------------
+[Ex1] --> Test Case 13 <--
+
+----------files and perms--------
+5717045 -rw------- 1 jdsilv2 root 14 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test5/names1.txt
+5717772 drwx------ 2 jdsilv2 root 2 Sep  5 14:01 test5/out
+---------------------------------
+./namefix.bash /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test5/names1.txt test5/out
+Brian Epstein
+Return code from the program is 0
+Check if input and output files exist.
+----------files and perms--------
+5717045 -rw------- 1 jdsilv2 root 14 Sep  5 14:01 /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/test5/names1.txt
+5717772 drwx------ 2 jdsilv2 root 3 Sep  5 14:01 test5/out
+5717773 -rw------- 1 jdsilv2 root 14 Sep  5 14:01 test5/out/names1.txt
+---------------------------------
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  primechk.bash Tests  @@@@@@@@@@@@@@@@@@@@@@@@
+
+********************************************************************************
+[[[ Usage tests - all must fail ]]]
+
+[Ex2] --> Test Case 01 <--
+./primechk.bash
+Usage: ./primechk.sh -f <numbersfile> [-l]
+Return code from the program is 1
+
+
+[Ex2] --> Test Case 02 <--
+-------- contents of nums.txt--------------
+13
+-----------------------------------------------------
+./primechk.bash -f nums.txt -l -f
+Usage: ./primechk.sh -f <numbersfile> [-l]
+Return code from the program is 1
+
+
+[Ex2] --> Test Case 03 <--
+./primechk.bash -f -l
+Error: please check if the file -l exists
+Return code from the program is 2
+
+
+[Ex2] --> Test Case 04 <--
+-------- contents of nums.txt--------------
+13
+-----------------------------------------------------
+./primechk.bash -l nums.txt -f
+Usage: ./primechk.sh -f <numbersfile> [-l]
+Return code from the program is 1
+
+
+[Ex2] --> Test Case 05 <--
+-------- contents of nums.txt--------------
+13
+-----------------------------------------------------
+./primechk.bash nums.txt -f
+Usage: ./primechk.sh -f <numbersfile> [-l]
+Return code from the program is 1
+
+
+[Ex2] --> Test Case 06 <--
+-------- contents of nosuch.txt--------------
+nosuch.txt is not a file / does not exist.
+-----------------------------------------------------
+./primechk.bash -f nosuch.txt
+Error: please check if the file nosuch.txt exists
+Return code from the program is 2
+
+
+[[[ Correct usages, must succeed ]]]
+
+[Ex2] --> Test Case 07 <--
+-------- contents of nums001.txt--------------
+13
+13.17
+17
+12As43
+122.21
+1307
+-----------------------------------------------------
+./primechk.bash -f nums001.txt
+13
+17
+1307
+Return code from the program is 0
+
+
+[Ex2] --> Test Case 08 <--
+-------- contents of nums002.txt--------------
+13
+13.17
+1307
+
+19
+-----------------------------------------------------
+./primechk.bash -f /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/nums002.txt
+13
+1307
+19
+Return code from the program is 0
+
+
+[Ex2] --> Test Case 09 <--
+-------- contents of nums003.txt--------------
+22
+10092003300140014003
+
+121234567898765432
+23
+-----------------------------------------------------
+./primechk.bash -f nums003.txt
+23
+Return code from the program is 0
+
+
+[Ex2] --> Test Case 10 <--
+-------- contents of nums004.txt--------------
+13
+13.17
+1306
+
+19
+-----------------------------------------------------
+./primechk.bash -f /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/nums004.txt -l
+19
+Return code from the program is 0
+
+
+[Ex2] --> Test Case 11 <--
+-------- contents of nums005.txt--------------
+130
+13.17
+1306
+
+3192
+-----------------------------------------------------
+./primechk.bash -f /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/nums005.txt -l
+No prime numbers were found in the file /home/2013/jdsilv2/tmp/__tmp_comp206_jdsilv2_229082/nums005.txt
+Return code from the program is 3
+
