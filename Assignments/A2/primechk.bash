@@ -10,13 +10,34 @@ LARGEST=false
 MAX_PRIME=-1
 PROG='/home/2013/jdsilv2/206/mini2/primechk'
 
+# 1 - Message to write
+# 2 - Exit code
+#
+# A small wrapper for writing a message to stdout
+# with the prefix `error: ` and then exiting with
+# some specified exit code.
+
 err() {
   echo "error: $1" && exit "$2"
 }
 
+# 1 - Message to write
+# 2 - Exit code
+#
+# A small wrapper for writing a message to stdout
+# and then exiting with an exit code.
+
 out() {
   echo "$1" && exit "$2"
 }
+
+# Here we parse the command-line options for this program. 
+# 
+# If the `-f` option is set we set it to $FILE and if the `-l` 
+# flag is set we turn on $LARGEST. 
+# 
+# Anything else passed in results in the output of a usage message 
+# with an exit status of 1.
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -33,15 +54,24 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# If the `-f` command-line option was not passed,
+# we output an error message and exit with code 1.
+
 if [[ -z $FILE ]]; then
   err 'Required option -f missing' 1
 fi
 
+# If the file passed into `-f` does not exist,
+# we output an error message and exit with code 2.
+
 if [[ ! -f $FILE ]]; then
-  err 'Input file must exist' 2
+  err "Input file $FILE does not exist" 2
 fi
 
-for line in $(grep -E '^[1-9][0-9]{0,16}' "$FILE"); do
+# Filter and go through the filtered contents of the input file,
+# checking whether or not each filtered line is a prime.
+
+for line in $(grep -E '^\d{1,18}$' "$FILE"); do
   if $PROG "$line" &>/dev/null ; then
     if [[ $LARGEST = true && "$line" -gt $MAX_PRIME ]]; then
       MAX_PRIME="$line"
@@ -50,6 +80,10 @@ for line in $(grep -E '^[1-9][0-9]{0,16}' "$FILE"); do
     fi
   fi
 done
+
+# If the `-l` flag was passed, we output the largest prime 
+# encountered, otherwise if there weren't any, we output an
+# error message and exit with code 3.
 
 if [[ $LARGEST = true ]]; then
   if [[ $MAX_PRIME -ne -1 ]]; then
