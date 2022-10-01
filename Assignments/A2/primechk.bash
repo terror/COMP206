@@ -14,21 +14,21 @@ PROG='/home/2013/jdsilv2/206/mini2/primechk'
 # 2 - Exit code
 #
 # A small wrapper for writing a message to stdout
-# with the prefix `error: ` and then exiting with
-# some specified exit code.
+# and then exiting with an exit code.
 
-err() {
-  echo "error: $1" && exit "$2"
+out() {
+  echo "$1" && exit "$2"
 }
 
 # 1 - Message to write
 # 2 - Exit code
 #
 # A small wrapper for writing a message to stdout
-# and then exiting with an exit code.
+# with the prefix `error: ` and then exiting with
+# some specified exit code.
 
-out() {
-  echo "$1" && exit "$2"
+err() {
+  echo "error: $1" && exit "$2"
 }
 
 # A helper function that outputs the usage of this program
@@ -89,7 +89,7 @@ fi
 # Filter and go through the filtered contents of the input file,
 # checking whether or not each filtered line is a prime.
 
-for line in $(grep -E '^[0-9]{1,18}$' "$FILE"); do
+for line in $(grep -E '^([1-9]|[1-9][0-9]{1,17})$' "$FILE"); do
   if $PROG "$line" &>/dev/null ; then
     if [[ $LARGEST = true && "$line" -gt $MAX_PRIME ]]; then
       MAX_PRIME="$line"

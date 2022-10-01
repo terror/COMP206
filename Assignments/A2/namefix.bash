@@ -9,22 +9,22 @@ PROG='/home/2013/jdsilv2/206/mini2/namefix'
 # 1 - Message to write
 # 2 - Exit code
 # 
-# A small wrapper for writing a message to stdout 
-# with the prefix `error: ` and then exiting with 
-# some specified exit code.
-
-err() {
-  echo "error: $1" && exit "$2"
-}
-
-# 1 - Message to write
-# 2 - Exit code
-# 
 # A small wrapper for writing a message to stdout
 # and then exiting with an exit code.
 
 out() {
   echo "$1" && exit "$2"
+}
+
+# 1 - Message to write
+# 2 - Exit code
+# 
+# A small wrapper for writing a message to stdout 
+# with the prefix `error: ` and then exiting with 
+# some specified exit code.
+
+err() {
+  out "error: $1" "$2"
 }
 
 # 1 - Input file
@@ -37,8 +37,8 @@ run() {
   $PROG "$1" "$2" && cat "$2"
 }
 
-# If the number of arguments passed to this program are greater than
-# or less than 2, we output a simple usage message and exit with code 1.
+# If the number of arguments passed to this program is not equal
+# to 2, we output a simple usage message and exit with code 1.
 
 if [[ $# -ne 2 ]]; then
   out 'Usage: namefix.bash <inputfile> <outputfile>' 1
@@ -108,25 +108,32 @@ fi
 # is a directory or an existing file without write permissions, we output
 # an error message and exit with code 4.
 # 
-# 1 - The output we're supposed to write to is a directory.
-
-if [[ -d $2 && -d $2/$(basename "$1") ]]; then
-  err "The output we're supposed to write to $2/$(basename "$1") is a directory" 4
-fi 
-
-# 2 - The output we're supposed to write to is an existing file without 
-#     write permissions.
-
-if [[ -d $2 && -f $2/$(basename "$1") && ! -w $2/$(basename "$1") ]]; then
-  err "Do not have write permissions on the output we're supposed to write to $2/$(basename "$1")" 4
-fi 
-
-# Now we're ready to run the program. If the output is
-# a directory, we use the input file name in the output
-# directory, otherwise we use the output file as provided.
+# We handle two cases:
 
 if [[ -d $2 ]]; then
-  run "$1" "$2/$(basename "$1")"
+  OUTPUT="$2/$(basename "$1")"
+  
+  # 1 - The output file we're supposed to write to is a directory.
+
+  if [[ -d $OUTPUT ]]; then
+    err "The output file we're supposed to write to $OUTPUT is a directory" 4
+  fi
+
+  # 2 - The output file we're supposed to write to is an existing file 
+  #     without write permissions.
+
+  if [[ -f $OUTPUT && ! -w $OUTPUT ]]; then
+    err "Do not have write permissions on the output we're supposed to write to $OUTPUT" 4
+  fi
+fi
+
+# Now we're ready to run the program. 
+#
+# If the output is a directory, we use the input file name in the 
+# output directory, otherwise we use the output file as provided.
+
+if [[ -d $2 ]]; then
+  run "$1" "$OUTPUT"
 else
   run "$1" "$2"
 fi
