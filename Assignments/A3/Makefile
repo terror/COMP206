@@ -6,3 +6,8 @@ clean:
 
 check:
 	shellcheck logparser.bash
+
+test:
+	diff logdata.csv spec/logdata.csv
+	diff stats.csv spec/stats.csv
+	diff stats.html spec/stats.html

@@ -4,8 +4,6 @@
 # Department: Computer Science
 # Email:      liam.scalzulli@mail.mcgill.ca
 
-BROADCAST='broadcastMsg'
-
 # 1 - Message to write
 # 2 - Exit code
 # 
@@ -31,12 +29,39 @@ err() {
 # 2 - Pattern
 # 
 # A helper utility to filter lines from a file using
-# grep.
+# grep and a specified pattern.
 
 lines() {
   grep -i "$2" "$1" | while read -r line; do
     echo "$line"
   done
+}
+
+# A helper that writes the broadcast message grep string
+# to stdout.
+
+broadcast() {
+  echo -n 'broadcastMsg'
+}
+
+# 1 - Sender process identifier
+# 2 - Message identifier
+# 
+# A helper that writes the received message grep string
+# to stdout
+
+receive() {
+  echo -n "Received a message from. message: \[senderProcess:$1:val:$2\]"
+}
+
+# 1 - Sender process identifier
+# 2 - Message identifier
+# 
+# A helper that writes the delivered message grep string
+# to stdout
+
+deliver() {
+  echo -n "Received :$2 from : $1"
 }
 
 # 1 - Input directory
@@ -52,9 +77,9 @@ lines() {
 entries() {
   for path in "$1"/*.log; do
     filename=$(basename "$path")
-    echo -n "$(echo ${filename%.*} | sed 's/\./\:/'),$4,"
-    echo -n "$(lines "$path" "Received a message from. message: \[senderProcess:$2:val:$3\]" | awk '{print $4}'),"
-    echo $(lines "$path" "Received :$3 from : $2" | awk '{print $4}')
+    echo -n "$(echo "${filename%.*}" | sed 's/\./\:/'),$4,"
+    echo -n "$(lines "$path" "$(receive "$2" "$3")" | awk '{print $4}'),"
+    echo    "$(lines "$path" "$(deliver "$2" "$3")" | awk '{print $4}')"
   done
 }
 
@@ -65,7 +90,7 @@ entries() {
 
 log() {
   for path in "$1"/*.log; do
-    grep -i $BROADCAST "$path" | while read -r line; do
+    grep -i "$(broadcast)" "$path" | while read -r line; do
       filename=$(basename "$path")
       message_id=$(echo "$line" | awk -F: '{print $NF}' | sed 's/ //')
       sender_process=$(echo ${filename%.*} | sed 's/\./\:/')
@@ -83,7 +108,12 @@ log() {
 # to stdout based on that parsed information.
 
 stats() {
-  echo 'foo'
+  echo "broadcaster,nummsgs,$(cat "$1" | awk -F, '{print $3}' | sort -u | sed -z 's/\n/,/g; s/.$//')"
+
+  for broadcaster in $(cat "$1" | awk -F, '{print $1}' | sort -u); do
+    total=$(cat "$1" | awk -F, '{print $1,$2}' | grep "$broadcaster" | sort -u | wc -l)
+    echo -n "$broadcaster,$total"
+  done
 }
 
 # 1 - The stats.csv file
