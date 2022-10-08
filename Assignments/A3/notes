@@ -10,9 +10,26 @@
 **** logdata.csv ****
 
 high level logic:
+
 - for each process log file, go through its message id's
   - then foreach `host:port:id` (unique identifier) in the receivers logfile, we can add an entry
     we need two things:
       - receive time
       - delivery time
-    format: <sender>,<message>,<receiver>,<broadcast-time>,<receive-time>,<delivery-time>
+
+format: <sender>,<message>,<receiver>,<broadcast-time>,<receive-time>,<delivery-time>
+
+**** stats.csv ****
+
+format: 'broadcaster' 'nummsgs' receivers...
+         broadcasters  nummsgs  % nummsgs
+              .          .          .
+              .          .          .
+              .          .          .
+              .          .          .
+              .          .          .
+
+**** stats.html ****
+
+cat static boilerplate
+replace all commands with corresponding table HTML tags

@@ -50,7 +50,7 @@ broadcast() {
 # A helper that writes the received message grep string
 # to stdout
 
-receive() {
+reception() {
   echo -n "Received a message from. message: \[senderProcess:$1:val:$2\]"
 }
 
@@ -60,7 +60,7 @@ receive() {
 # A helper that writes the delivered message grep string
 # to stdout
 
-deliver() {
+delivery() {
   echo -n "Received :$2 from : $1"
 }
 
@@ -78,8 +78,8 @@ entries() {
   for path in "$1"/*.log; do
     filename=$(basename "$path")
     echo -n "$(echo "${filename%.*}" | sed 's/\./\:/'),$4,"
-    echo -n "$(lines "$path" "$(receive "$2" "$3")" | awk '{print $4}'),"
-    echo    "$(lines "$path" "$(deliver "$2" "$3")" | awk '{print $4}')"
+    echo -n "$(lines "$path" "$(reception "$2" "$3")" | awk '{print $4}'),"
+    echo    "$(lines "$path" "$(delivery  "$2" "$3")" | awk '{print $4}')"
   done
 }
 
@@ -102,17 +102,37 @@ log() {
   done
 }
 
+
+# 1 - The logdata.csv file
+# 2 - Broadcast process identifier
+# 3 - Receiving process identifiers
+# 4 - Total messages sent by the given broadcast process
+# 
+# A helper to aggregate statictics for each receiving process
+# based on a broadcast process identifier.
+
+aggregate_receivers() {
+  for receiver in $3; do
+    condition='{ if ($NF != "" && $1 == broadcaster && $3 == receiver) print $3 }'
+    received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | wc -l)
+    echo -n ",$(echo "scale = 4; ("$received" / "$4") * 100" | bc)"
+  done
+}
+
 # 1 - The logdata.csv file
 # 
 # Parses the logdata.csv file and writes statistics
 # to stdout based on that parsed information.
 
 stats() {
-  echo "broadcaster,nummsgs,$(cat "$1" | awk -F, '{print $3}' | sort -u | sed -z 's/\n/,/g; s/.$//')"
+  receivers=$(awk -F, '{print $3}' "$1" | sort -u)
 
-  for broadcaster in $(cat "$1" | awk -F, '{print $1}' | sort -u); do
-    total=$(cat "$1" | awk -F, '{print $1,$2}' | grep "$broadcaster" | sort -u | wc -l)
+  echo "broadcaster,nummsgs,$(echo "$receivers" | sed -z 's/\n/,/g; s/.$//')"
+
+  for broadcaster in $(awk -F, '{print $1}' "$1" | sort -u); do
+    total=$(awk -F, '{print $1,$2}' "$1" | grep "$broadcaster" | sort -u | wc -l)
     echo -n "$broadcaster,$total"
+    echo "$(aggregate_receivers "$1" "$broadcaster" "$receivers" "$total")"
   done
 }
 
