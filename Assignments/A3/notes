@@ -1,0 +1,18 @@
+- take in some input directory
+
+- this input directory contains log files
+
+- parse these log files
+  - generate a CSV file (logdata.csv) in the CWD
+    a bunch of records
+    form: process id, message id, process id, broadcast time
+
+**** logdata.csv ****
+
+high level logic:
+- for each process log file, go through its message id's
+  - then foreach `host:port:id` (unique identifier) in the receivers logfile, we can add an entry
+    we need two things:
+      - receive time
+      - delivery time
+    format: <sender>,<message>,<receiver>,<broadcast-time>,<receive-time>,<delivery-time>
