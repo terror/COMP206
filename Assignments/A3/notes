@@ -33,3 +33,7 @@ format: 'broadcaster' 'nummsgs' receivers...
 
 cat static boilerplate
 replace all commands with corresponding table HTML tags
+
+TODO:
+- Get rid of `wc` usage
+- Get rid of `head` usage

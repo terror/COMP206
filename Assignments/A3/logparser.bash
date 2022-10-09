@@ -8,7 +8,7 @@
 # 2 - Exit code
 # 
 # A small wrapper for writing a message to stdout
-# and then exiting with an exit code.
+# and then exiting with a specified exit code.
 
 out() {
   echo "$1" && exit "$2"
@@ -19,7 +19,7 @@ out() {
 # 
 # A small wrapper for writing a message to stderr 
 # with the prefix `error: ` and then exiting with 
-# some specified exit code.
+# a specified exit code.
 
 err() {
   echo "$1" >&2 && exit "$2"
@@ -31,7 +31,7 @@ err() {
 # A helper utility to filter lines from a file using
 # grep and a specified pattern.
 
-lines() {
+matches() {
   grep -i "$2" "$1" | while read -r line; do
     echo "$line"
   done
@@ -78,8 +78,8 @@ entries() {
   for path in "$1"/*.log; do
     filename=$(basename "$path")
     echo -n "$(echo "${filename%.*}" | sed 's/\./\:/'),$4,"
-    echo -n "$(lines "$path" "$(reception "$2" "$3")" | awk '{print $4}'),"
-    echo    "$(lines "$path" "$(delivery  "$2" "$3")" | awk '{print $4}')"
+    echo -n "$(matches "$path" "$(reception "$2" "$3")" | awk '{print $4}'),"
+    echo    "$(matches "$path" "$(delivery  "$2" "$3")" | awk '{print $4}')"
   done
 }
 
@@ -105,17 +105,17 @@ log() {
 
 # 1 - The logdata.csv file
 # 2 - Broadcast process identifier
-# 3 - Receiving process identifiers
-# 4 - Total messages sent by the given broadcast process
+# 3 - Total messages sent by the given broadcast process
+# 4 - Receiving process identifiers
 # 
-# A helper to aggregate statictics for each receiving process
+# A helper to aggregate statistics for each receiving process
 # based on a broadcast process identifier.
 
-aggregate_receivers() {
-  for receiver in $3; do
+aggregate() {
+  for receiver in $4; do
     condition='{ if ($NF != "" && $1 == broadcaster && $3 == receiver) print $3 }'
     received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | wc -l)
-    echo -n ",$(echo "scale = 4; ("$received" / "$4") * 100" | bc)"
+    echo -n ",$(echo "$received $3" | awk '{printf "%.2f\n", ($1 / $2) * 100}')"
   done
 }
 
@@ -126,14 +126,22 @@ aggregate_receivers() {
 
 stats() {
   receivers=$(awk -F, '{print $3}' "$1" | sort -u)
-
   echo "broadcaster,nummsgs,$(echo "$receivers" | sed -z 's/\n/,/g; s/.$//')"
-
   for broadcaster in $(awk -F, '{print $1}' "$1" | sort -u); do
     total=$(awk -F, '{print $1,$2}' "$1" | grep "$broadcaster" | sort -u | wc -l)
-    echo -n "$broadcaster,$total"
-    echo "$(aggregate_receivers "$1" "$broadcaster" "$receivers" "$total")"
+    echo "$broadcaster,$total$(aggregate "$1" "$broadcaster" "$total" "$receivers")"
   done
+}
+
+# 1 - Rows in stats.csv
+# 
+# A helper to transform the rows in stats.csv
+# into valid HTML table rows.
+
+rows() {
+	for row in $1; do
+		echo "<tr><td>$(echo "$row" | sed 's/,/<\/td><td>/g')</td></tr>"
+	done
 }
 
 # 1 - The stats.csv file
@@ -142,7 +150,18 @@ stats() {
 # replacing the appropriate commas with html tags.
 
 page() {
-  echo 'foo'
+  cat <<-EOF
+		<!DOCTYPE html>
+		<html>
+			<body>
+				<h2>GC Efficiency</h2>
+				<table>
+					<tr><th>$(head -n 1 "$1" | sed 's/,/<\/th><th>/g')</th></tr>
+					$(rows "$(tail -n +2 "$1")")
+				</table>
+			</body>
+		</html>
+	EOF
 }
 
 # If the number of arguments passed to this program is not
