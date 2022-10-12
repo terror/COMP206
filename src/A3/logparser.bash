@@ -74,7 +74,7 @@ delivery() {
 #
 #         <receiver>,<broadcasted>,<received>,<delivered>
 
-entries() {
+receiver_log_entries() {
   for path in "$1"/*.log; do
     filename=$(basename "$path")
     echo -n "$(echo "${filename%.*}" | sed 's/\./\:/'),$4,"
@@ -95,7 +95,7 @@ log() {
       message_id=$(echo "$line" | awk -F: '{print $NF}' | sed 's/ //')
       sender_process=$(echo "${filename%.*}" | sed 's/\./\:/')
       broadcast_timestamp=$(echo "$line" | awk '{print $4}')
-      for entry in $(entries "$1" "$sender_process" "$message_id" "$broadcast_timestamp"); do
+      for entry in $(receiver_log_entries "$1" "$sender_process" "$message_id" "$broadcast_timestamp"); do
         echo "$sender_process,$message_id,$entry"
       done
     done
@@ -110,7 +110,7 @@ log() {
 # A helper to aggregate statistics for each receiving process
 # based on a broadcast process identifier.
 
-aggregate() {
+receiver_stat_entries() {
   for receiver in $4; do
     condition='{ if ($NF != "" && $1 == broadcaster && $3 == receiver) print $3 }'
     received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | awk 'END{print NR}')
@@ -128,7 +128,7 @@ stats() {
   echo "broadcaster,nummsgs,$(echo "$receivers" | sed -z 's/\n/,/g; s/.$//')"
   for broadcaster in $(awk -F, '{print $1}' "$1" | sort -u); do
     total=$(awk -F, '{print $1,$2}' "$1" | grep "$broadcaster" | sort -u | awk 'END{print NR}')
-    echo "$broadcaster,$total$(aggregate "$1" "$broadcaster" "$total" "$receivers")"
+    echo "$broadcaster,$total$(receiver_stat_entries "$1" "$broadcaster" "$total" "$receivers")"
   done
 }
 
@@ -137,7 +137,7 @@ stats() {
 # A helper to transform the rows in stats.csv
 # into valid HTML table rows.
 
-rows() {
+stat_table_rows() {
 	for row in $1; do
 		echo "<TR><TD>$(echo "$row" | sed 's/,/<\/TD><TD>/g')</TD></TR>"
 	done
@@ -155,7 +155,7 @@ page() {
 			<H2>GC Efficiency</H2>
 			<TABLE>
 				<TR><TH>$(awk 'NR == 1' "$1" | sed 's/,/<\/TH><TH>/g')</TH></TR>
-				$(rows "$(awk 'NR > 1' "$1")")
+				$(stat_table_rows "$(awk 'NR > 1' "$1")")
 			</TABLE>
 		</BODY>
 	</HTML>
