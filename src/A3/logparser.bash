@@ -114,7 +114,7 @@ aggregate() {
   for receiver in $4; do
     condition='{ if ($NF != "" && $1 == broadcaster && $3 == receiver) print $3 }'
     received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | awk 'END{print NR}')
-    echo -n ",$(echo "$received $3" | awk '{printf "%.2f\n", ($1 / $2) * 100}')"
+    echo -n ",$(echo "$received $3" | awk '{print ($1 / $2) * 100}')"
   done
 }
 
@@ -139,7 +139,7 @@ stats() {
 
 rows() {
 	for row in $1; do
-		echo "<tr><td>$(echo "$row" | sed 's/,/<\/td><td>/g')</td></tr>"
+		echo "<TR><TD>$(echo "$row" | sed 's/,/<\/TD><TD>/g')</TD></TR>"
 	done
 }
 
@@ -150,16 +150,15 @@ rows() {
 
 page() {
   cat <<-EOF
-	<!DOCTYPE html>
-	<html>
-		<body>
-			<h2>GC Efficiency</h2>
-			<table>
-				<tr><th>$(awk 'NR == 1' "$1" | sed 's/,/<\/th><th>/g')</th></tr>
+	<HTML>
+		<BODY>
+			<H2>GC Efficiency</H2>
+			<TABLE>
+				<TR><TH>$(awk 'NR == 1' "$1" | sed 's/,/<\/TH><TH>/g')</TH></TR>
 				$(rows "$(awk 'NR > 1' "$1")")
-			</table>
-		</body>
-	</html>
+			</TABLE>
+		</BODY>
+	</HTML>
 	EOF
 }
 
