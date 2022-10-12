@@ -79,7 +79,7 @@ entries() {
     filename=$(basename "$path")
     echo -n "$(echo "${filename%.*}" | sed 's/\./\:/'),$4,"
     echo -n "$(matches "$path" "$(reception "$2" "$3")" | awk '{print $4}'),"
-    echo    "$(matches "$path" "$(delivery  "$2" "$3")" | awk '{print $4}')"
+    echo "$(matches "$path" "$(delivery  "$2" "$3")" | awk '{print $4}')"
   done
 }
 
@@ -93,7 +93,7 @@ log() {
     grep -i "$(broadcast)" "$path" | while read -r line; do
       filename=$(basename "$path")
       message_id=$(echo "$line" | awk -F: '{print $NF}' | sed 's/ //')
-      sender_process=$(echo ${filename%.*} | sed 's/\./\:/')
+      sender_process=$(echo "${filename%.*}" | sed 's/\./\:/')
       broadcast_timestamp=$(echo "$line" | awk '{print $4}')
       for entry in $(entries "$1" "$sender_process" "$message_id" "$broadcast_timestamp"); do
         echo "$sender_process,$message_id,$entry"
@@ -101,7 +101,6 @@ log() {
     done
   done
 }
-
 
 # 1 - The logdata.csv file
 # 2 - Broadcast process identifier
@@ -114,7 +113,7 @@ log() {
 aggregate() {
   for receiver in $4; do
     condition='{ if ($NF != "" && $1 == broadcaster && $3 == receiver) print $3 }'
-    received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | wc -l)
+    received=$(awk -F, -v broadcaster="$2" -v receiver="$receiver" "$condition" "$1" | awk 'END{print NR}')
     echo -n ",$(echo "$received $3" | awk '{printf "%.2f\n", ($1 / $2) * 100}')"
   done
 }
@@ -128,7 +127,7 @@ stats() {
   receivers=$(awk -F, '{print $3}' "$1" | sort -u)
   echo "broadcaster,nummsgs,$(echo "$receivers" | sed -z 's/\n/,/g; s/.$//')"
   for broadcaster in $(awk -F, '{print $1}' "$1" | sort -u); do
-    total=$(awk -F, '{print $1,$2}' "$1" | grep "$broadcaster" | sort -u | wc -l)
+    total=$(awk -F, '{print $1,$2}' "$1" | grep "$broadcaster" | sort -u | awk 'END{print NR}')
     echo "$broadcaster,$total$(aggregate "$1" "$broadcaster" "$total" "$receivers")"
   done
 }
@@ -151,16 +150,16 @@ rows() {
 
 page() {
   cat <<-EOF
-		<!DOCTYPE html>
-		<html>
-			<body>
-				<h2>GC Efficiency</h2>
-				<table>
-					<tr><th>$(head -n 1 "$1" | sed 's/,/<\/th><th>/g')</th></tr>
-					$(rows "$(tail -n +2 "$1")")
-				</table>
-			</body>
-		</html>
+	<!DOCTYPE html>
+	<html>
+		<body>
+			<h2>GC Efficiency</h2>
+			<table>
+				<tr><th>$(awk 'NR == 1' "$1" | sed 's/,/<\/th><th>/g')</th></tr>
+				$(rows "$(awk 'NR > 1' "$1")")
+			</table>
+		</body>
+	</html>
 	EOF
 }
 
@@ -172,9 +171,8 @@ if [[ $# -ne 1 ]]; then
   out 'Usage: ./logparser.bash <logdir>' 1
 fi
 
-# If the input directory isn't a valid directory,
-# we write an error message to stderr and exit with
-# code 2.
+# If the input directory isn't a valid directory, we write an 
+# error message to stderr and exit with code 2.
 
 if [[ ! -d $1 ]]; then
   err "$1 is not a valid directory name" 2
@@ -185,9 +183,9 @@ fi
 # The program entrypoint.
 
 main() {
-  log   "$1"        > logdata.csv
+  log "$1" > logdata.csv
   stats logdata.csv > stats.csv
-  page  stats.csv   > stats.html
+  page stats.csv > stats.html
 }
 
 main "$1"
