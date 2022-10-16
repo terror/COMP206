@@ -6,7 +6,7 @@
 
 # 1 - Message to write
 # 2 - Exit code
-# 
+#
 # A small wrapper for writing a message to stdout
 # and then exiting with a specified exit code.
 
@@ -16,9 +16,9 @@ out() {
 
 # 1 - Message to write
 # 2 - Exit code
-# 
-# A small wrapper for writing a message to stderr 
-# with the prefix `error: ` and then exiting with 
+#
+# A small wrapper for writing a message to stderr
+# with the prefix `error: ` and then exiting with
 # a specified exit code.
 
 err() {
@@ -27,7 +27,7 @@ err() {
 
 # 1 - Input file path
 # 2 - Pattern
-# 
+#
 # A helper utility to filter lines from a file using
 # grep and a specified pattern.
 
@@ -46,7 +46,7 @@ broadcast() {
 
 # 1 - Sender process identifier
 # 2 - Message identifier
-# 
+#
 # A helper that writes the received message grep string
 # to stdout
 
@@ -56,7 +56,7 @@ reception() {
 
 # 1 - Sender process identifier
 # 2 - Message identifier
-# 
+#
 # A helper that writes the delivered message grep string
 # to stdout
 
@@ -84,7 +84,7 @@ receiver_log_entries() {
 }
 
 # 1 - The input directory
-# 
+#
 # Parses all log files in the input directory and
 # writes content to stdout for creating `logdata.csv`.
 
@@ -106,7 +106,7 @@ log() {
 # 2 - Broadcast process identifier
 # 3 - Total messages sent by the given broadcast process
 # 4 - Receiving process identifiers
-# 
+#
 # A helper to aggregate statistics for each receiving process
 # based on a broadcast process identifier.
 
@@ -119,7 +119,7 @@ receiver_stat_entries() {
 }
 
 # 1 - The logdata.csv file
-# 
+#
 # Parses the logdata.csv file and writes statistics
 # to stdout based on that parsed information.
 
@@ -133,23 +133,23 @@ stats() {
 }
 
 # 1 - Rows in stats.csv
-# 
+#
 # A helper to transform the rows in stats.csv
 # into valid HTML table rows.
 
 stat_table_rows() {
-	for row in $1; do
-		echo "<TR><TD>$(echo "$row" | sed 's/,/<\/TD><TD>/g')</TD></TR>"
-	done
+  for row in $1; do
+    echo "<TR><TD>$(echo "$row" | sed 's/,/<\/TD><TD>/g')</TD></TR>"
+  done
 }
 
 # 1 - The stats.csv file
-# 
+#
 # Turns the stats.csv file into a valid html file by
 # replacing the appropriate commas with html tags.
 
 page() {
-  cat <<-EOF
+	cat <<-EOF
 	<HTML>
 		<BODY>
 			<H2>GC Efficiency</H2>
@@ -170,7 +170,7 @@ if [[ $# -ne 1 ]]; then
   out 'Usage: ./logparser.bash <logdir>' 1
 fi
 
-# If the input directory isn't a valid directory, we write an 
+# If the input directory isn't a valid directory, we write an
 # error message to stderr and exit with code 2.
 
 if [[ ! -d $1 ]]; then
@@ -178,7 +178,7 @@ if [[ ! -d $1 ]]; then
 fi
 
 # 1 - The input directory
-# 
+#
 # The program entrypoint.
 
 main() {
