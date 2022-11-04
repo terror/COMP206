@@ -1,0 +1,27 @@
+Available commands:
+
+GRID <width> <height>
+
+Initialize the grid with the specified `width` and
+`height` values.
+
+CHAR <char>
+
+Use `char` as the drawing character.
+
+RECTANGLE <x1>,<y1> <x2>,<y2>
+
+Draw a rectangle with its bottom-left coordinate
+as `(x1, y1)` and its top-left coordinate as (`x2`, `y2`).
+
+LINE <x1>,<y1> <x2>,<y2>
+
+Draw a line between (`x1`, `y1`) and (`x2`, `y2`).
+
+CIRCLE <x>,<y> <r>
+
+Draw a circle at the position (`x`, `y`) with radius `r`.
+
+DISPLAY
+
+Display the state of the current drawing to the terminal.
