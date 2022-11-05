@@ -74,6 +74,36 @@ struct Grid {
 };
 
 /*
+ * A helper to check if a point (`x`, `y`) is in bounds of
+ * the drawing area.
+ *
+ * @param grid A grid struct
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @return Whether or not the point (`x`, `y`) is in bounds.
+ */
+bool in_bounds(struct Grid grid, int x, int y) {
+  return (
+    x >= 0 &&
+    x < grid.width &&
+    y >= 0 &&
+    y < grid.height
+  );
+}
+
+/*
+ * A helper to plot a single pixel on the passed in grid.
+ *
+ * @param grid A pointer to a grid
+ * @param x The x coordinate.
+ * @param y The y coordinate.
+ */
+void plot(struct Grid *grid, int x, int y) {
+  if (!in_bounds(*grid, x, y)) return;
+  grid->state[x][y] = grid->character;
+}
+
+/*
  * Bresenham's line drawing algorithm.
  *
  * @param grid A pointer to a grid.
@@ -84,20 +114,27 @@ struct Grid {
  * @param dx The difference in x values.
  * @param dy The difference in y values.
  */
-void bresenham(struct Grid *grid, int x1, int y1, int x2, int y2, int dx, int dy) {
+void bresenham(
+  struct Grid *grid,
+  int x1,
+  int y1,
+  int x2,
+  int y2,
+  int dx,
+  int dy,
+  bool decide
+) {
   int pk = 2 * dy - dx;
 
   for (int i = 0; i <= dx; ++i) {
-    // Ensure we're within bounds of the grid
-    if (x1 >= 0 && x1 < grid->width && y1 >= 0 && y1 < grid->height)
-      grid->state[x1][y1] = grid->character;
-
     x1 < x2 ? ++x1 : --x1;
 
-    if (pk < 0)
+    if (pk < 0) {
+      decide ? plot(grid, y1, x1) : plot(grid, x1, y1);
       pk = pk + 2 * dy;
-    else {
+    } else {
       y1 < y2 ? ++y1 : --y1;
+      decide ? plot(grid, y1, x1) : plot(grid, x1, y1);
       pk = pk + 2 * dy - 2 * dx;
     }
   }
@@ -113,11 +150,13 @@ void bresenham(struct Grid *grid, int x1, int y1, int x2, int y2, int dx, int dy
  * @param y2
  */
 void draw_line(struct Grid*grid, int x1, int y1, int x2, int y2) {
+  plot(grid, x1, y1);
+
   int dx = abs(x2 - x1), dy = abs(y2 - y1);
 
   dx > dy ?
-    bresenham(grid, x1, y1, x2, y2, dx, dy) :
-    bresenham(grid, y1, x1, y2, x2, dy, dx);
+    bresenham(grid, x1, y1, x2, y2, dx, dy, false) :
+    bresenham(grid, y1, x1, y2, x2, dy, dx, true);
 }
 
 /*
