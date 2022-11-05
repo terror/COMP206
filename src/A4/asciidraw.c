@@ -1,11 +1,16 @@
-#include <stdio.h>
+#include <limits.h>
+#include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
 const int MAX_ARGS = 4;
 
+/*
+ * All available commands the interpreter
+ * can evaluate.
+ */
 enum Command {
   CHAR,
   CIRCLE,
@@ -21,15 +26,21 @@ const static struct {
   enum Command command;
   const char *str;
 } COMMAND_STRING [] = {
-  {CHAR, "CHAR"},
-  {CIRCLE, "CIRCLE"},
-  {DISPLAY, "DISPLAY"},
-  {END, "END"},
-  {GRID, "GRID"},
-  {LINE, "LINE"},
-  {RECTANGLE, "RECTANGLE"}
+  { CHAR,      "CHAR"      },
+  { CIRCLE,    "CIRCLE"    },
+  { DISPLAY,   "DISPLAY"   },
+  { END,       "END"       },
+  { GRID,      "GRID"      },
+  { LINE,      "LINE"      },
+  { RECTANGLE, "RECTANGLE" }
 };
 
+/*
+ * Find a corresponding `Command` enum from a specified string.
+ *
+ * @param str The string to associate with a `Command` enum.
+ * @return The correspoding `Command` enum.
+ */
 enum Command command_from_string(const char *str) {
   int size = sizeof(COMMAND_STRING) / sizeof(COMMAND_STRING[0]);
 
@@ -40,11 +51,20 @@ enum Command command_from_string(const char *str) {
   return INVALID;
 }
 
+/*
+ * Represents an `operation`, which is essentially a command
+ * that contains its arguments and its original name.
+ */
 struct Operation {
+  char* name;
   enum Command cmd;
   int args[MAX_ARGS];
 };
 
+/*
+ * The canvas the user can draw on, holds all
+ * relevant state on itself.
+ */
 struct Grid {
   char **state;
   char character;
@@ -53,10 +73,69 @@ struct Grid {
   bool initialized;
 };
 
+/*
+ * Bresenham's line drawing algorithm.
+ *
+ * @param grid A pointer to a grid.
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @param dx The difference in x values.
+ * @param dy The difference in y values.
+ */
+void bresenham(struct Grid *grid, int x1, int y1, int x2, int y2, int dx, int dy) {
+  int pk = 2 * dy - dx;
+
+  for (int i = 0; i <= dx; ++i) {
+    // Ensure we're within bounds of the grid
+    if (x1 >= 0 && x1 < grid->width && y1 >= 0 && y1 < grid->height)
+      grid->state[x1][y1] = grid->character;
+
+    x1 < x2 ? ++x1 : --x1;
+
+    if (pk < 0)
+      pk = pk + 2 * dy;
+    else {
+      y1 < y2 ? ++y1 : --y1;
+      pk = pk + 2 * dy - 2 * dx;
+    }
+  }
+}
+
+/*
+ * A small wrapper around Bresenham's line drawing algorithm.
+ *
+ * @param grid A pointer to a grid.
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ */
+void draw_line(struct Grid*grid, int x1, int y1, int x2, int y2) {
+  int dx = abs(x2 - x1), dy = abs(y2 - y1);
+
+  dx > dy ?
+    bresenham(grid, x1, y1, x2, y2, dx, dy) :
+    bresenham(grid, y1, x1, y2, x2, dy, dx);
+}
+
+/*
+ * Handler for the `CHAR` operation.
+ *
+ * @param grid A pointer to a grid.
+ * @param args [character, ..].
+ */
 void character(struct Grid *grid, int args[]) {
   grid->character = args[0];
 }
 
+/*
+ * Handler for the `CIRCLE` operation.
+ *
+ * @param grid A pointer to a grid
+ * @param args [x, y, radius, ..].
+ */
 void circle(struct Grid *grid, int args[]) {
   int x = args[0], y = args[1], radius = args[2];
 
@@ -68,6 +147,11 @@ void circle(struct Grid *grid, int args[]) {
   printf("x: %d, y: %d, radius: %d\n", x, y, radius);
 }
 
+/*
+ * Handler for the `DISPLAY` operation.
+ *
+ * @param grid A grid struct.
+ */
 void display(struct Grid grid) {
   int wrap = 10;
 
@@ -91,6 +175,12 @@ void display(struct Grid grid) {
   printf("\n");
 }
 
+/*
+ * Handler for the `GRID` operation.
+ *
+ * @param grid A pointer to a grid.
+ * @param args [width, height, ..].
+ */
 void grid(struct Grid *grid, int args[]) {
   int width = args[0], height = args[1];
 
@@ -101,11 +191,11 @@ void grid(struct Grid *grid, int args[]) {
 
   grid->state = (char**)malloc(sizeof(char*)*width);
 
-  for (int i = 0; i < width; ++i)
+  for (int i = 0; i < height; ++i)
     grid->state[i] = (char*)malloc(sizeof(char)*height);
 
-  for (int i = 0; i < width; ++i)
-    for (int j = 0; j < height; ++j)
+  for (int i = 0; i < height; ++i)
+    for (int j = 0; j < width; ++j)
       grid->state[i][j] = ' ';
 
   grid->width = width;
@@ -113,6 +203,12 @@ void grid(struct Grid *grid, int args[]) {
   grid->initialized = true;
 }
 
+/*
+ * Handler for the `LINE` operation.
+ *
+ * @param grid A pointer to a grid.
+ * @param args [x1, y1, x2, y2].
+ */
 void line(struct Grid *grid, int args[]) {
   int x1 = args[0], y1 = args[1], x2 = args[2], y2 = args[3];
 
@@ -121,9 +217,15 @@ void line(struct Grid *grid, int args[]) {
     return;
   }
 
-  printf("x1: %d, y1: %d, x2: %d, y2: %d\n", x1, y1, x2, y2);
+  draw_line(grid, x1, y1, x2, y2);
 }
 
+/*
+ * Handler for the `RECTANGLE` operation.
+ *
+ * @param grid A pointer to a grid.
+ * @param args [x1, y1, x2, y2].
+ */
 void rectangle(struct Grid *grid, int args[]) {
   int x1 = args[0], y1 = args[1], x2 = args[2], y2 = args[3];
 
@@ -132,25 +234,49 @@ void rectangle(struct Grid *grid, int args[]) {
     return;
   }
 
-  printf("x1: %d, y1: %d, x2: %d, y2: %d\n", x1, y1, x2, y2);
+  draw_line(grid, x1, y1, x1 + abs(x2 - x1), y1);
+  draw_line(grid, x1 + abs(x2 - x1), y1, x2, y2);
+  draw_line(grid, x2, y2, x1, y1 + abs(y2 - y1));
+  draw_line(grid, x1, y1 + abs(y2 - y1), x1, y1);
 }
 
-struct Lexer {
+/*
+ * The line parser responsible for turning lines read
+ * from standard input into valid `Operation` structs.
+ */
+struct Parser {
   char line[LINE_MAX];
 };
 
-void read(struct Lexer *lexer) {
-  fgets(lexer->line, LINE_MAX, stdin);
-  lexer->line[strcspn(lexer->line, "\n")] = 0;
+/*
+ * Read a line in from standard input and set it on the
+ * passed in parser.
+ *
+ * @param parser A pointer to a parser.
+ */
+void read(struct Parser *parser) {
+  fgets(parser->line, LINE_MAX, stdin);
+  parser->line[strcspn(parser->line, "\n")] = 0;
 }
 
-struct Operation lex(struct Lexer lexer) {
+/*
+ * Parse the current string that's set on the passed
+ * in parser.
+ *
+ * It first splits on spaces `' '` and then handles each
+ * individual token by splitting on commas `,`.
+ *
+ * @param parser A parser struct.
+ * @return The parsed operation.
+ */
+struct Operation parse(struct Parser parser) {
   char *inner, *outer;
 
   struct Operation operation;
 
-  char *token = strtok_r(lexer.line, " ", &outer);
+  char *token = strtok_r(parser.line, " ", &outer);
 
+  operation.name = strdup(token);
   operation.cmd = command_from_string(token);
 
   int index = 0;
@@ -171,15 +297,34 @@ struct Operation lex(struct Lexer lexer) {
   return operation;
 }
 
+/*
+ * The struct responsible for evaluating operations
+ * parsed by the parser.
+ */
 struct Interpreter {
   struct Grid grid;
   struct Operation op;
 };
 
+/*
+ * Load an operation onto the passed in interpreter.
+ *
+ * @param interpreter A pointer to an interpreter.
+ * @param op An operation struct.
+ */
 void load(struct Interpreter *interpreter, struct Operation op) {
   interpreter->op = op;
 }
 
+/*
+ * Evaluate the operation that's present on the passed in
+ * interpreter.
+ *
+ * This method essentially associates commands with their
+ * corresponding methods on `Grid`.
+ *
+ * @param i A pointer to an interpreter.
+ */
 void eval(struct Interpreter *i) {
   switch(i->op.cmd) {
     case CHAR:
@@ -197,7 +342,7 @@ void eval(struct Interpreter *i) {
       grid(&i->grid, i->op.args);
       break;
     case INVALID:
-      printf("error: Invalid operation\n");
+      printf("error: Invalid command `%s`\n", i->op.name);
       break;
     case LINE:
       line(&i->grid, i->op.args);
@@ -208,13 +353,16 @@ void eval(struct Interpreter *i) {
   }
 }
 
+/*
+ * The program entrypoint.
+ */
 int main() {
   struct Grid grid;
 
   grid.character = '*';
   grid.initialized = false;
 
-  struct Lexer lexer;
+  struct Parser parser;
   struct Interpreter interpreter;
 
   interpreter.grid = grid;
@@ -224,10 +372,10 @@ int main() {
     printf("> ");
 
     // Read a line in from stdin
-    read(&lexer);
+    read(&parser);
 
     // Load the operation onto the interpreter
-    load(&interpreter, lex(lexer));
+    load(&interpreter, parse(parser));
 
     // Evaluate the currently loaded operation
     eval(&interpreter);
