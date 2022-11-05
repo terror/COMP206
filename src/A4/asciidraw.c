@@ -114,7 +114,7 @@ void plot(struct Grid *grid, int x, int y) {
  * @param dx The difference in x values.
  * @param dy The difference in y values.
  */
-void bresenham(
+void bresenham_line(
   struct Grid *grid,
   int x1,
   int y1,
@@ -155,8 +155,55 @@ void draw_line(struct Grid*grid, int x1, int y1, int x2, int y2) {
   int dx = abs(x2 - x1), dy = abs(y2 - y1);
 
   dx > dy ?
-    bresenham(grid, x1, y1, x2, y2, dx, dy, false) :
-    bresenham(grid, y1, x1, y2, x2, dy, dx, true);
+    bresenham_line(grid, x1, y1, x2, y2, dx, dy, false) :
+    bresenham_line(grid, y1, x1, y2, x2, dy, dx, true);
+}
+
+/*
+ * Helper for the bresenham circle drawing algorithm.
+ *
+ * @param grid A pointer to a grid.
+ * @param xc
+ * @param yc
+ * @param x
+ * @param y
+ */
+void draw_circle(struct Grid *grid, int xc, int yc, int x, int y) {
+  plot(grid, xc + x, yc + y);
+  plot(grid, xc - x, yc + y);
+  plot(grid, xc + x, yc - y);
+  plot(grid, xc - x, yc - y);
+  plot(grid, xc + y, yc + x);
+  plot(grid, xc - y, yc + x);
+  plot(grid, xc + y, yc - x);
+  plot(grid, xc - y, yc - x);
+}
+
+/*
+ * The bresenham circle drawing algorithm.
+ *
+ * @param grid A pointer to a grid.
+ * @param xc The center x coordinate.
+ * @param yc The center y coordinate.
+ * @param radius The radius.
+ */
+void bresenham_circle(struct Grid *grid, int xc, int yc, int radius) {
+  int x = 0, y = radius, d = 3 - 2 * radius;
+
+  draw_circle(grid, xc, yc, x, y);
+
+  while (y >= x) {
+    ++x;
+
+    if (d > 0) {
+      y--;
+      d = d + 4 * (x - y) + 10;
+    } else {
+      d = d + 4 * x + 6;
+    }
+
+    draw_circle(grid, xc, yc, x, y);
+  }
 }
 
 /*
@@ -183,7 +230,7 @@ void circle(struct Grid *grid, int args[]) {
     return;
   }
 
-  printf("x: %d, y: %d, radius: %d\n", x, y, radius);
+  bresenham_circle(grid, x, y, radius);
 }
 
 /*
