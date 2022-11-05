@@ -11,8 +11,8 @@ Use `char` as the drawing character.
 
 RECTANGLE <x1>,<y1> <x2>,<y2>
 
-Draw a rectangle with its bottom-left coordinate
-as `(x1, y1)` and its top-left coordinate as (`x2`, `y2`).
+Draw a rectangle with its top-left coordinate
+as `(x1, y1)` and its bottom-right coordinate as (`x2`, `y2`).
 
 LINE <x1>,<y1> <x2>,<y2>
 
@@ -25,3 +25,8 @@ Draw a circle at the position (`x`, `y`) with radius `r`.
 DISPLAY
 
 Display the state of the current drawing to the terminal.
+
+TODO:
+- Properly set character using the `CHAR` command
+- Add the tester script
+- Fix coordinates

@@ -22,6 +22,10 @@ enum Command {
   RECTANGLE,
 };
 
+/*
+ * A struct array that corresponds a `Command`
+ * enum with a string.
+ */
 const static struct {
   enum Command command;
   const char *str;
@@ -92,7 +96,7 @@ bool in_bounds(struct Grid grid, int x, int y) {
 }
 
 /*
- * A helper to plot a single pixel on the passed in grid.
+ * A helper to plot a single point on the passed in grid.
  *
  * @param grid A pointer to a grid
  * @param x The x coordinate.
@@ -454,9 +458,6 @@ int main() {
   interpreter.grid = grid;
 
   for (;;) {
-    // Display the prompt
-    printf("> ");
-
     // Read a line in from stdin
     read(&parser);
 
