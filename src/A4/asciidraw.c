@@ -62,8 +62,38 @@ int main() {
         }
       }
 
-      int x = args[0], y = args[1], radius = args[2];
-      printf("x: %d, y: %d, radius: %d\n", x, y, radius);
+      int xc = args[0], yc = args[1], radius = args[2];
+
+      int x = 0, y = radius, d = 3 - 2 * radius;
+
+      if (xc + x >= 0 && xc + x < width && yc + y >= 0 && yc + y < height) grid[xc + x][yc + y] = character;
+      if (xc - x >= 0 && xc - x < width && yc + y >= 0 && yc + y < height) grid[xc - x][yc + y] = character;
+      if (xc + x >= 0 && xc + x < width && yc - y >= 0 && yc - y < height) grid[xc + x][yc - y] = character;
+      if (xc - x >= 0 && xc - x < width && yc - y >= 0 && yc - y < height) grid[xc - x][yc - y] = character;
+      if (xc + y >= 0 && xc + y < width && yc + x >= 0 && yc + x < height) grid[xc + y][yc + x] = character;
+      if (xc - y >= 0 && xc - y < width && yc + x >= 0 && yc + x < height) grid[xc - y][yc + x] = character;
+      if (xc + y >= 0 && xc + y < width && yc - x >= 0 && yc - x < height) grid[xc + y][yc - x] = character;
+      if (xc - y >= 0 && xc - y < width && yc - x >= 0 && yc - x < height) grid[xc - y][yc - x] = character;
+
+      while (y >= x) {
+        ++x;
+
+        if (d > 0) {
+          --y;
+          d = d + 4 * (x - y) + 10;
+        } else {
+          d = d + 4 * x + 6;
+        }
+
+        if (xc + x >= 0 && xc + x < width && yc + y >= 0 && yc + y < height) grid[xc + x][yc + y] = character;
+        if (xc - x >= 0 && xc - x < width && yc + y >= 0 && yc + y < height) grid[xc - x][yc + y] = character;
+        if (xc + x >= 0 && xc + x < width && yc - y >= 0 && yc - y < height) grid[xc + x][yc - y] = character;
+        if (xc - x >= 0 && xc - x < width && yc - y >= 0 && yc - y < height) grid[xc - x][yc - y] = character;
+        if (xc + y >= 0 && xc + y < width && yc + x >= 0 && yc + x < height) grid[xc + y][yc + x] = character;
+        if (xc - y >= 0 && xc - y < width && yc + x >= 0 && yc + x < height) grid[xc - y][yc + x] = character;
+        if (xc + y >= 0 && xc + y < width && yc - x >= 0 && yc - x < height) grid[xc + y][yc - x] = character;
+        if (xc - y >= 0 && xc - y < width && yc - x >= 0 && yc - x < height) grid[xc - y][yc - x] = character;
+      }
 
       continue;
     }
