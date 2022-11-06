@@ -2,6 +2,7 @@
 
 COUNT=1
 FILE='asciidraw.c'
+OUT='asciidraw'
 
 # 1 - The message to write.
 #
@@ -19,11 +20,9 @@ err() {
 
 test() {
   echo "Test $COUNT: $1"
-
   ./asciidraw <<-EOL
-    $2
+  $2
 	EOL
-
   ((COUNT += 1))
 }
 
@@ -34,25 +33,67 @@ main() {
     err "Cannot locate $FILE"
   fi
 
-  if ! gcc -o asciidraw asciidraw.c -lm; then
+  if ! gcc -o $OUT asciidraw.c -lm; then
     err "Failed to compile $FILE"
   fi
 
 	test "Draw horizontal lines" "$(cat <<-EOL
-			GRID 10   10
-      LINE 0,0  10,0
-      LINE 0,1  10,1
-      LINE 0,2  10,2
-      LINE 0,3  10,3
-      LINE 0,4  10,4
-      LINE 0,5  10,5
-      LINE 0,6  10,6
-      LINE 0,7  10,7
-      LINE 0,8  10,8
-      LINE 0,9  10,9
-      LINE 0,10 10,10
-      DISPLAY
-      END
+    GRID 10 10
+    LINE 0,0 10,0
+    LINE 0,1 10,1
+    LINE 0,2 10,2
+    LINE 0,3 10,3
+    LINE 0,4 10,4
+    LINE 0,5 10,5
+    LINE 0,6 10,6
+    LINE 0,7 10,7
+    LINE 0,8 10,8
+    LINE 0,9 10,9
+    LINE 0,10 10,10
+    DISPLAY
+    END
+		EOL
+  )"
+
+	test "Draw rectangle" "$(cat <<-EOL
+    GRID 10   10
+    RECTANGLE 0,0 9,9
+    DISPLAY
+    END
+		EOL
+  )"
+
+	test "Draw all shapes" "$(cat <<-EOL
+    GRID 10   10
+    CIRCLE 5,5,2
+    LINE 0,5 0,9
+    RECTANGLE 0,0 9,9
+    DISPLAY
+    END
+		EOL
+  )"
+
+	test "Command precedence" "$(cat <<-EOL
+    CHAR +
+    CIRCLE 5,5,2
+    LINE 0,5 0,9
+    RECTANGLE 0,0 9,9
+    GRID 10 10
+    CIRCLE 5,5,2
+    LINE 0,5 0,9
+    RECTANGLE 0,0 9,9
+    DISPLAY
+    END
+		EOL
+  )"
+
+	test "Invalid commands" "$(cat <<-EOL
+    FOO 1 2 3
+    GRID 10 10
+    FOO 1 2 3
+    CIRCLE 4,4,2
+    DISPLAY
+    END
 		EOL
   )"
 }

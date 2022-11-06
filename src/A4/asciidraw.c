@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <limits.h>
 #include <math.h>
 #include <stdbool.h>
@@ -206,7 +207,7 @@ void bresenham_circle(
  * @param args [character, ..].
  */
 void character(struct Grid *grid, int args[]) {
-  grid->character = args[0];
+  grid->character = (char)args[0];
 }
 
 /*
@@ -374,7 +375,9 @@ struct Operation parse(struct Parser parser) {
     char *local = strtok_r(token, ",", &inner);
 
     while (local) {
-      operation.args[index++] = atoi(local);
+      operation.args[index++] = isdigit(*local) ?
+        atoi(local) :
+        (int)*local;
       local = strtok_r(NULL, ",", &inner);
     }
   }
