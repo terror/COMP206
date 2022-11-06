@@ -172,7 +172,20 @@ int main() {
       }
 
       int x1 = args[0], y1 = args[1], x2 = args[2], y2 = args[3];
-      printf("x1: %d, y1: %d, x2: %d, y2: %d\n", x1, y1, x2, y2);
+
+      int dx =  fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
+      int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
+
+      int a = dx + dy, b = 0;
+
+      for (;;) {
+        if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+          grid[x1][y1] = character;
+        if (x1 == x2 && y1 == y2) break;
+        b = 2 * a;
+        if (b >= dy) { a += dy; x1 += sx; }
+        if (b <= dx) { a += dx; y1 += sy; }
+      }
 
       continue;
     }
@@ -208,8 +221,85 @@ int main() {
         }
       }
 
-      int x1 = args[0], y1 = args[1], x2 = args[2], y2 = args[3];
-      printf("x1: %d, y1: %d, x2: %d, y2: %d\n", x1, y1, x2, y2);
+      // Draw line from (x1, y1) -> (x1 + (x2 - x1), y1)
+      {
+        int x1 = args[0], y1 = args[1];
+        int x2 = args[0] + fabs((double)(args[2] - args[0])), y2 = args[1];
+
+        int dx =  fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
+        int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
+
+        int a = dx + dy, b = 0;
+
+        for (;;) {
+          if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+            grid[x1][y1] = character;
+          if (x1 == x2 && y1 == y2) break;
+          b = 2 * a;
+          if (b >= dy) { a += dy; x1 += sx; }
+          if (b <= dx) { a += dx; y1 += sy; }
+        }
+      }
+
+      // Draw line from (x1 + (x2 - x1), y1) -> (x2, y2)
+      {
+        int x1 = args[0] + fabs((double)(args[2] - args[0])), y1 = args[1];
+        int x2 = args[2], y2 = args[3];
+
+        int dx =  fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
+        int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
+
+        int a = dx + dy, b = 0;
+
+        for (;;) {
+          if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+            grid[x1][y1] = character;
+          if (x1 == x2 && y1 == y2) break;
+          b = 2 * a;
+          if (b >= dy) { a += dy; x1 += sx; }
+          if (b <= dx) { a += dx; y1 += sy; }
+        }
+      }
+
+      // Draw (x2, y2) -> (x1, y1 + (y2 - y1))
+      {
+        int x1 = args[2], y1 = args[3];
+        int x2 = args[0], y2 = args[1] + fabs((double)(args[3] - args[1]));
+
+        int dx =  fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
+        int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
+
+        int a = dx + dy, b = 0;
+
+        for (;;) {
+          if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+            grid[x1][y1] = character;
+          if (x1 == x2 && y1 == y2) break;
+          b = 2 * a;
+          if (b >= dy) { a += dy; x1 += sx; }
+          if (b <= dx) { a += dx; y1 += sy; }
+        }
+      }
+
+      // Draw (x1, y1 + (y2 - y1)) -> (x1, y1)
+      {
+        int x1 = args[0], y1 = args[1] + fabs((double)(args[3] - args[1]));
+        int x2 = args[0], y2 = args[1];
+
+        int dx =  fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
+        int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
+
+        int a = dx + dy, b = 0;
+
+        for (;;) {
+          if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+            grid[x1][y1] = character;
+          if (x1 == x2 && y1 == y2) break;
+          b = 2 * a;
+          if (b >= dy) { a += dy; x1 += sx; }
+          if (b <= dx) { a += dx; y1 += sy; }
+        }
+      }
 
       continue;
     }
