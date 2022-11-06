@@ -110,10 +110,10 @@ int main() {
         continue;
       }
 
-      for (int i = 0; i < height; ++i) {
+      for (int i = 0; i < width; ++i) {
         printf("%d ", ((9 - i) % wrap + wrap) % wrap);
-        for (int j = 0; j < width; ++j)
-          printf("%c", grid[i][j]);
+        for (int j = 0; j < height; ++j)
+          printf("%c", grid[j][i]);
         printf("\n");
       }
 

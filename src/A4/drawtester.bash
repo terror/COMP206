@@ -20,6 +20,7 @@ err() {
 
 test() {
   echo "Test $COUNT: $1"
+  echo "$2"
   ./asciidraw <<-EOL
   $2
 	EOL
@@ -37,63 +38,100 @@ main() {
     err "Failed to compile $FILE"
   fi
 
-	test "Draw horizontal lines" "$(cat <<-EOL
-    GRID 10 10
-    LINE 0,0 10,0
-    LINE 0,1 10,1
-    LINE 0,2 10,2
-    LINE 0,3 10,3
-    LINE 0,4 10,4
-    LINE 0,5 10,5
-    LINE 0,6 10,6
-    LINE 0,7 10,7
-    LINE 0,8 10,8
-    LINE 0,9 10,9
-    LINE 0,10 10,10
-    DISPLAY
-    END
+  test "Only display the drawing area" "$(cat <<-EOL
+		GRID 10 10
+		DISPLAY
+		END
 		EOL
   )"
 
-	test "Draw rectangle" "$(cat <<-EOL
-    GRID 10   10
-    RECTANGLE 0,0 9,9
-    DISPLAY
-    END
+	test "Draw two lines" "$(cat <<-EOL
+		GRID 10 10
+		LINE 0,0 9,9
+		LINE 9,0 0,9
+		DISPLAY
+		END
+		EOL
+  )"
+
+	test "Draw a rectangle" "$(cat <<-EOL
+		GRID 10 10
+		RECTANGLE 0,0 9,9
+		DISPLAY
+		END
+		EOL
+  )"
+
+	test "Draw a circle" "$(cat <<-EOL
+		GRID 10 10
+		CIRCLE 5,5,2
+		DISPLAY
+		END
 		EOL
   )"
 
 	test "Draw all shapes" "$(cat <<-EOL
-    GRID 10   10
-    CIRCLE 5,5,2
-    LINE 0,5 0,9
-    RECTANGLE 0,0 9,9
-    DISPLAY
-    END
+		GRID 10 10
+		CIRCLE 5,5,2
+		LINE 0,5 0,9
+		RECTANGLE 0,0 9,9
+		DISPLAY
+		END
 		EOL
   )"
 
-	test "Command precedence" "$(cat <<-EOL
-    CHAR +
-    CIRCLE 5,5,2
-    LINE 0,5 0,9
-    RECTANGLE 0,0 9,9
-    GRID 10 10
-    CIRCLE 5,5,2
-    LINE 0,5 0,9
-    RECTANGLE 0,0 9,9
-    DISPLAY
-    END
+	test "Set a different character" "$(cat <<-EOL
+		CHAR +
+		GRID 10 10
+		CHAR ~
+		CIRCLE 5,5,2
+		CHAR -
+		LINE 0,5 0,9
+		CHAR =
+		RECTANGLE 0,0 9,9
+		DISPLAY
+		END
 		EOL
   )"
 
-	test "Invalid commands" "$(cat <<-EOL
-    FOO 1 2 3
-    GRID 10 10
-    FOO 1 2 3
-    CIRCLE 4,4,2
-    DISPLAY
-    END
+	test "Handle command precedence" "$(cat <<-EOL
+		CHAR +
+		CIRCLE 5,5,2
+		LINE 0,5 0,9
+		RECTANGLE 0,0 9,9
+		GRID 10 10
+		CIRCLE 5,5,2
+		LINE 0,5 0,9
+		RECTANGLE 0,0 9,9
+		DISPLAY
+		END
+		EOL
+  )"
+
+	test "Handle invalid commands" "$(cat <<-EOL
+		FOO 1 2 3
+		GRID 10 10
+		FOO 1 2 3
+		CIRCLE 4,4,2
+		DISPLAY
+		END
+		EOL
+  )"
+
+	test "Handle larger grid" "$(cat <<-EOL
+		GRID 40 40
+		LINE 0,0 39,39
+		LINE 0,39 39,0
+		CIRCLE 20,20,19
+		DISPLAY
+		END
+		EOL
+  )"
+
+	test "Cannot resize grid" "$(cat <<-EOL
+		GRID 10 10
+		GRID 20 20
+		END
 		EOL
   )"
 }
