@@ -46,7 +46,10 @@ const static struct {
  * @return The correspoding `Command` enum.
  */
 enum Command command_from_string(const char *str) {
-  int size = sizeof(COMMAND_STRING) / sizeof(COMMAND_STRING[0]);
+  int size = (
+    sizeof(COMMAND_STRING) /
+    sizeof(COMMAND_STRING[0])
+  );
 
   for (int i = 0; i < size; ++i)
     if (!strcmp(str, COMMAND_STRING[i].str))
@@ -110,6 +113,9 @@ void plot(struct Grid *grid, int x, int y) {
 /*
  * Bresenham's line drawing algorithm.
  *
+ * Details for understanding can be found here:
+ * https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ *
  * @param grid A pointer to a grid.
  * @param x1
  * @param y1
@@ -145,34 +151,24 @@ void bresenham_line(
 }
 
 /*
- * A small wrapper around Bresenham's line drawing algorithm.
+ * The bresenham circle drawing algorithm.
+ *
+ * Details for understanding can be found here:
+ * https://www.javatpoint.com/computer-graphics-bresenhams-circle-algorithm
  *
  * @param grid A pointer to a grid.
- * @param x1
- * @param y1
- * @param x2
- * @param y2
+ * @param xc The center x coordinate.
+ * @param yc The center y coordinate.
+ * @param radius The circle radius.
  */
-void draw_line(struct Grid*grid, int x1, int y1, int x2, int y2) {
-  plot(grid, x1, y1);
+void bresenham_circle(
+  struct Grid *grid,
+  int xc,
+  int yc,
+  int radius
+) {
+  int x = 0, y = radius, d = 3 - 2 * radius;
 
-  int dx = abs(x2 - x1), dy = abs(y2 - y1);
-
-  dx > dy ?
-    bresenham_line(grid, x1, y1, x2, y2, dx, dy, false) :
-    bresenham_line(grid, y1, x1, y2, x2, dy, dx, true);
-}
-
-/*
- * Helper for the bresenham circle drawing algorithm.
- *
- * @param grid A pointer to a grid.
- * @param xc
- * @param yc
- * @param x
- * @param y
- */
-void draw_circle(struct Grid *grid, int xc, int yc, int x, int y) {
   plot(grid, xc + x, yc + y);
   plot(grid, xc - x, yc + y);
   plot(grid, xc + x, yc - y);
@@ -181,20 +177,6 @@ void draw_circle(struct Grid *grid, int xc, int yc, int x, int y) {
   plot(grid, xc - y, yc + x);
   plot(grid, xc + y, yc - x);
   plot(grid, xc - y, yc - x);
-}
-
-/*
- * The bresenham circle drawing algorithm.
- *
- * @param grid A pointer to a grid.
- * @param xc The center x coordinate.
- * @param yc The center y coordinate.
- * @param radius The radius.
- */
-void bresenham_circle(struct Grid *grid, int xc, int yc, int radius) {
-  int x = 0, y = radius, d = 3 - 2 * radius;
-
-  draw_circle(grid, xc, yc, x, y);
 
   while (y >= x) {
     ++x;
@@ -206,7 +188,14 @@ void bresenham_circle(struct Grid *grid, int xc, int yc, int radius) {
       d = d + 4 * x + 6;
     }
 
-    draw_circle(grid, xc, yc, x, y);
+    plot(grid, xc + x, yc + y);
+    plot(grid, xc - x, yc + y);
+    plot(grid, xc + x, yc - y);
+    plot(grid, xc - x, yc - y);
+    plot(grid, xc + y, yc + x);
+    plot(grid, xc - y, yc + x);
+    plot(grid, xc + y, yc - x);
+    plot(grid, xc - y, yc - x);
   }
 }
 
@@ -307,7 +296,13 @@ void line(struct Grid *grid, int args[]) {
     return;
   }
 
-  draw_line(grid, x1, y1, x2, y2);
+  plot(grid, x1, y1);
+
+  int dx = abs(x2 - x1), dy = abs(y2 - y1);
+
+  dx > dy ?
+    bresenham_line(grid, x1, y1, x2, y2, dx, dy, false) :
+    bresenham_line(grid, y1, x1, y2, x2, dy, dx, true);
 }
 
 /*
@@ -324,10 +319,10 @@ void rectangle(struct Grid *grid, int args[]) {
     return;
   }
 
-  draw_line(grid, x1, y1, x1 + abs(x2 - x1), y1);
-  draw_line(grid, x1 + abs(x2 - x1), y1, x2, y2);
-  draw_line(grid, x2, y2, x1, y1 + abs(y2 - y1));
-  draw_line(grid, x1, y1 + abs(y2 - y1), x1, y1);
+  line(grid, (int[]) { x1, y1, x1 + abs(x2 - x1), y1 });
+  line(grid, (int[]) { x1 + abs(x2 - x1), y1, x2, y2 });
+  line(grid, (int[]) { x2, y2, x1, y1 + abs(y2 - y1) });
+  line(grid, (int[]) { x1, y1 + abs(y2 - y1), x1, y1 });
 }
 
 /*
@@ -399,11 +394,11 @@ struct Interpreter {
 /*
  * Load an operation onto the passed in interpreter.
  *
- * @param interpreter A pointer to an interpreter.
+ * @param i A pointer to an interpreter.
  * @param op An operation struct.
  */
-void load(struct Interpreter *interpreter, struct Operation op) {
-  interpreter->op = op;
+void load(struct Interpreter *i, struct Operation op) {
+  i->op = op;
 }
 
 /*
@@ -447,15 +442,14 @@ void eval(struct Interpreter *i) {
  * The program entrypoint.
  */
 int main() {
-  struct Grid grid;
-
-  grid.character = '*';
-  grid.initialized = false;
-
   struct Parser parser;
-  struct Interpreter interpreter;
 
-  interpreter.grid = grid;
+  struct Interpreter interpreter = {
+    .grid = {
+      .character = '*',
+      .initialized = false
+    }
+  };
 
   for (;;) {
     // Read a line in from stdin
