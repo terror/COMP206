@@ -81,7 +81,6 @@ main() {
   )"
 
 	test "Set a different character" "$(cat <<-EOL
-		CHAR +
 		GRID 10 10
 		CHAR ~
 		CIRCLE 5,5,2
