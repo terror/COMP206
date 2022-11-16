@@ -117,10 +117,10 @@ int main() {
       }
 
       // Display the grid state
-      for (int i = 0; i < width; ++i) {
-        printf("%d ", ((9 - i) % wrap + wrap) % wrap);
-        for (int j = 0; j < height; ++j)
-          printf("%c", grid[j][i]);
+      for (int i = height - 1; i >= 0; --i) {
+        printf("%d ", (((wrap - 1) - i) % wrap + wrap) % wrap);
+        for (int j = 0; j < width; ++j)
+          printf("%c", grid[i][j]);
         printf("\n");
       }
 
@@ -128,7 +128,7 @@ int main() {
 
       // Display the bottom grid values
       for (int i = 0; i < width; ++i)
-        printf("%d", ((9 - i) % wrap + wrap) % wrap);
+        printf("%d", ((i - wrap) % wrap + wrap) % wrap);
 
       printf("\n");
 
@@ -215,6 +215,9 @@ int main() {
       }
 
       int x1 = args[0], y1 = args[1], x2 = args[2], y2 = args[3];
+
+      if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height)
+        grid[x1][y1] = character;
 
       int dx = fabs((double)(x2 - x1)), sx = x1 < x2 ? 1 : -1;
       int dy = -fabs((double)(y2 - y1)), sy = y1 < y2 ? 1 : -1;
@@ -370,3 +373,4 @@ int main() {
     printf("error: Invalid command `%s`\n", token);
   }
 }
+
