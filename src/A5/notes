@@ -1,0 +1,15 @@
+data
+====
+id -> 9 digit number
+name, dept, faculty -> max 30 characters (may have spaces)
+hireyear, admyear -> year of the calendar (4 digit numbers)
+tenured -> Y OR N
+
+commands
+========
+I ->    insert: insert an entry into the linked list
+D ->    delete: delete an entry in the linked list
+LIST -> list: list all entries (ascending order of id field)
+END -> end the command
+  Then WRITE TO THE FILE PROVIDED (e.g. exactly the output of the LIST command)
+  *Remember to free all the memory allocated to the linked list before terminating the program.
