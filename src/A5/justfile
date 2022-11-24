@@ -1,0 +1,23 @@
+set dotenv-load
+
+export EDITOR := 'nvim'
+
+alias c := compile
+alias r := run
+
+default:
+  just --list
+
+clean:
+  rm -rf a.out
+
+compile:
+  gcc -o pimapp pimapp.c
+
+forbid:
+  ./bin/forbid
+
+run *args:
+  @just compile
+  ./pimapp {{args}}
+  @just clean
