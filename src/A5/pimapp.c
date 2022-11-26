@@ -150,20 +150,20 @@ void update(
   struct PersonalInfoRecord *source,
   struct PersonalInfoRecord *dest
 ) {
-  if (strlen(dest->name) > 0)
+  if (strlen(source->name) > 0)
     strcpy(dest->name, source->name);
 
   if (dest->ptype == 'S') {
-    if (strlen(dest->info.stud.faculty) > 0)
+    if (strlen(source->info.stud.faculty) > 0)
       strcpy(dest->info.stud.faculty, source->info.stud.faculty);
-    if (dest->info.stud.admyear != 0)
+    if (source->info.stud.admyear != 0)
       dest->info.stud.admyear = source->info.stud.admyear;
   } else {
-    if (strlen(dest->info.prof.dept) > 0)
+    if (strlen(source->info.prof.dept) > 0)
       strcpy(dest->info.prof.dept, source->info.prof.dept);
-    if (dest->info.prof.hireyear != 0)
+    if (source->info.prof.hireyear != 0)
       dest->info.prof.hireyear = source->info.prof.hireyear;
-    if (dest->info.prof.tenured != 0)
+    if (source->info.prof.tenured != 0)
       dest->info.prof.tenured = source->info.prof.tenured;
   }
 }
@@ -298,7 +298,8 @@ void dump(struct List *list, char *db) {
 
   // Couldn't open it
   if (file == NULL) {
-    printf("error: Unable to open file %s for writing.\n", db);
+    fprintf(stderr, "error: Unable to open file %s for writing.\n", db);
+    clear(list);
     exit(3);
   }
 
@@ -350,7 +351,7 @@ struct Operation parse(struct Parser parser) {
     if (init == 0) {
       operation.name = strdup(curr);
       operation.cmd = command_from_string(curr);
-      init++;
+      init ^= 1;
     } else {
       operation.args[index++] = strdup(curr);
     }
