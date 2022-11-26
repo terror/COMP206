@@ -340,19 +340,20 @@ void read(struct Parser *parser) {
  * @param parser A parser.
  */
 struct Operation parse(struct Parser parser) {
-  char *token = strtok(parser.line, ",");
+  char *original = parser.line, *curr;
 
   struct Operation operation;
 
-  operation.name = strdup(token);
-  operation.cmd = command_from_string(token);
+  int init = 0, index = 0;
 
-  int index = 0;
-
-  for (;;) {
-    token = strtok(NULL, ",");
-    if (!token) break;
-    operation.args[index++] = strdup(token);
+  while ((curr = strsep(&original, ",")) != NULL) {
+    if (init == 0) {
+      operation.name = strdup(curr);
+      operation.cmd = command_from_string(curr);
+      init++;
+    } else {
+      operation.args[index++] = strdup(curr);
+    }
   }
 
   return operation;
