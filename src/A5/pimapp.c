@@ -55,18 +55,6 @@ enum Command command_from_string(char *str) {
 }
 
 /*
- * Represents an *operation* which is essentially a command
- * that contains its arguments and its original name.
- *
- * Note: the maximum amount of arguments a command can have is 5.
- */
-struct Operation {
-  char *name;
-  enum Command cmd;
-  char *args[5];
-};
-
-/*
  * Definition for a linked list node given
  * for this assignment.
  */
@@ -91,6 +79,56 @@ typedef struct PersonalInfoRecord {
 } PersonalInfoRecord;
 
 /*
+ * Represents an *operation* which is essentially a command
+ * that contains its arguments and its original name.
+ *
+ * Note: the maximum amount of arguments a command can have is 6.
+ */
+struct Operation {
+  char *name;
+  enum Command cmd;
+  char *args[6];
+};
+
+/*
+ * Convert an operation to a valid linked list node
+ * of type `PersonalInfoRecord`.
+ *
+ * Note: arguments should always be valid,
+ * i.e. [id, ptype, name, ..] <-- the rest depending
+ * on whether its a student or a professor.
+ *
+ * @param op The operation to convert.
+ */
+struct PersonalInfoRecord* to_node(struct Operation op) {
+  char
+    *id   = op.args[0],
+    *type = op.args[1],
+    *name = op.args[2];
+
+  struct PersonalInfoRecord *node =
+    (struct PersonalInfoRecord*)
+    malloc(sizeof(struct PersonalInfoRecord));
+
+  strcpy(node->id, id);
+
+  node->ptype = *type;
+
+  strcpy(node->name, name);
+
+  if (*type == 'S') {
+    strcpy(node->info.stud.faculty, op.args[3]);
+    node->info.stud.admyear = atoi(op.args[4]);
+  } else {
+    strcpy(node->info.prof.dept, op.args[3]);
+    node->info.prof.hireyear = atoi(op.args[4]);
+    node->info.prof.tenured = *op.args[5];
+  }
+
+  return node;
+}
+
+/*
  * Container for a linked list.
  *
  * Contains a single pointer to the head
@@ -101,26 +139,72 @@ struct List {
 };
 
 /*
+ * Update a linked list nodes' fields.
+ *
+ * Note: this only updates non-empty fields.
+ *
+ * @param source The source node.
+ * @param dest The node to update.
+ */
+void update(
+  struct PersonalInfoRecord *source,
+  struct PersonalInfoRecord *dest
+) {
+  if (strlen(dest->name) > 0)
+    strcpy(dest->name, source->name);
+
+  if (dest->ptype == 'S') {
+    if (strlen(dest->info.stud.faculty) > 0)
+      strcpy(dest->info.stud.faculty, source->info.stud.faculty);
+    if (dest->info.stud.admyear != 0)
+      dest->info.stud.admyear = source->info.stud.admyear;
+  } else {
+    if (strlen(dest->info.prof.dept) > 0)
+      strcpy(dest->info.prof.dept, source->info.prof.dept);
+    if (dest->info.prof.hireyear != 0)
+      dest->info.prof.hireyear = source->info.prof.hireyear;
+    if (dest->info.prof.tenured != 0)
+      dest->info.prof.tenured = source->info.prof.tenured;
+  }
+}
+
+/*
  * Insert a node into a linked list.
  *
  * @param list The linked list to operate on.
  * @param node The node to insert.
  */
 void insert(struct List *list, struct PersonalInfoRecord *node) {
-  struct PersonalInfoRecord *curr = list->head;
+  struct PersonalInfoRecord *curr = list->head, *prev = NULL;
 
   if (curr == NULL) {
     list->head = node;
     return;
   }
 
-  while (curr->next != NULL) {
-    if (curr->id == node->id)
-      printf("Found existing node!");
+  if (curr->next == NULL && !strcmp(curr->id, node->id)) {
+    update(node, curr);
+    return;
+  }
+
+  while (curr != NULL && atoi(curr->id) <= atoi(node->id)) {
+    if (!strcmp(curr->id, node->id)) {
+      update(node, curr);
+      return;
+    }
+    prev = curr;
     curr = curr->next;
   }
 
-  curr->next = node;
+  if (prev == NULL) {
+    node->next = curr;
+    list->head = node;
+  } else if (curr == NULL) {
+    prev->next = node;
+  } else {
+    node->next = prev->next;
+    prev->next = node;
+  }
 }
 
 /*
@@ -129,19 +213,19 @@ void insert(struct List *list, struct PersonalInfoRecord *node) {
  * @param list The list to operate on.
  * @param node The node to delete.
  */
-void delete(struct List *list, struct PersonalInfoRecord *node) {
+void delete(struct List *list, char *id) {
   if (list->head == NULL)
     return;
 
   struct PersonalInfoRecord *curr = list->head, *prev;
 
-  if (curr != NULL && curr->id == node->id) {
+  if (curr != NULL && !strcmp(curr->id, id)) {
     list->head = curr->next;
     free(curr);
     return;
   }
 
-  while (curr != NULL && curr->id != node->id) {
+  while (curr != NULL && strcmp(curr->id, id)) {
     prev = curr;
     curr = curr->next;
   }
@@ -160,12 +244,12 @@ void delete(struct List *list, struct PersonalInfoRecord *node) {
  * @param list The list to clear.
  */
 void clear(struct List *list) {
-  struct PersonalInfoRecord *curr = list->head, *prev;
+  struct PersonalInfoRecord *curr;
 
-  while (curr != NULL) {
-    if (prev != NULL) free(prev);
-    prev = curr;
-    curr = curr->next;
+  while (list->head != NULL) {
+    curr = list->head;
+    list->head = list->head->next;
+    free(curr);
   }
 }
 
@@ -181,7 +265,7 @@ void print(struct List list, FILE *fptr) {
   while (curr != NULL) {
     fprintf(
       fptr,
-      "%s,%c,%s,%s,%d",
+      "%s,%c,%s,%s,%d%c%c\n",
       curr->id,
       curr->ptype,
       curr->name,
@@ -190,7 +274,14 @@ void print(struct List list, FILE *fptr) {
       curr->info.prof.dept,
       curr->ptype == 'S' ?
       curr->info.stud.admyear :
-      curr->info.prof.hireyear
+      curr->info.prof.hireyear,
+      curr->ptype == 'P' &&
+      curr->info.prof.tenured != 0 ?
+      ',' :
+      ' ',
+      curr->ptype == 'P' ?
+      curr->info.prof.tenured :
+      ' '
     );
     curr = curr->next;
   }
@@ -202,44 +293,26 @@ void print(struct List list, FILE *fptr) {
  * @param list The list to work with.
  * @param db The name of the database file.
  */
-void dump(struct List list, char *db) {
+void dump(struct List *list, char *db) {
   FILE *file = fopen(db, "w");
 
+  // Couldn't open it
   if (file == NULL) {
-    printf("error: Unable to open file %s for writing.", db);
+    printf("error: Unable to open file %s for writing.\n", db);
     exit(3);
   }
 
-  print(list, file);
+  // Write to the file
+  print(*list, file);
 
-  clear(&list);
-}
+  // Close the file
+  fclose(file);
 
-/*
- * Convert an operation to a valid linked list node
- * of type `PersonalInfoRecord`.
- *
- * Note: arguments should always be valid,
- * i.e. [id, ptype, name, ..] <-- the rest depending
- * on whether its a student or a professor.
- *
- * @param op The operation to convert.
- */
-struct PersonalInfoRecord* to_node(struct Operation op) {
-  char
-    id = *op.args[0],
-    ptype = *op.args[1],
-    name = *op.args[2];
+  // Free all memory
+  clear(list);
 
-  struct PersonalInfoRecord *node =
-    (struct PersonalInfoRecord*)
-    malloc(sizeof(struct PersonalInfoRecord));
-
-  strcpy(node->id, &id);
-  node->ptype = ptype;
-  strcpy(node->name, &name);
-
-  return node;
+  // Exit the program
+  exit(0);
 }
 
 /*
@@ -313,10 +386,10 @@ void load(struct Interpreter *i, struct Operation op) {
 void eval(struct Interpreter *i) {
   switch (i->op.cmd) {
     case DELETE:
-      delete(&i->list, to_node(i->op));
+      delete(&i->list, i->op.args[0]);
       break;
     case END:
-      dump(i->list, i->db);
+      dump(&i->list, i->db);
       break;
     case INSERT:
       insert(&i->list, to_node(i->op));
@@ -343,7 +416,7 @@ int main(int argc, char *argv[]) {
   }
 
   struct Interpreter interpreter = {
-    .db = argv[0],
+    .db = argv[1],
     .list = { .head = NULL }
   };
 
